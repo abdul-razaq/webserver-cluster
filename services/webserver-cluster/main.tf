@@ -21,7 +21,7 @@ resource "aws_security_group_rule" "instance_security_group" {
 }
 
 resource "aws_launch_configuration" "launch_config" {
-  image_id = "ami-0fb653ca2d3203ac1"
+  image_id = var.ami
   instance_type = var.instance_type
   security_groups = [aws_security_group.security_group.id]
 
@@ -29,6 +29,7 @@ resource "aws_launch_configuration" "launch_config" {
     server_port = var.server_port
     db_address = data.terraform_remote_state.db.outputs.db_address
     db_port = data.terraform_remote_state.db.outputs.db_port
+    server_data = var.server_data
   })
 
   # This is Required when using a launch configuration with an auto scaling group.
@@ -44,6 +45,7 @@ resource "aws_launch_configuration" "launch_config" {
 }
 
 resource "aws_autoscaling_group" "autoscaling_group" {
+  name = "${var.cluster_name}-${aws_launch_configuration.launch_config.name}"
   launch_configuration = aws_launch_configuration.launch_config.name
   vpc_zone_identifier = data.aws_subnets.default_vpc_subnets.ids
   target_group_arns = [aws_lb_target_group.load_balancer_target_group.arn]
@@ -51,6 +53,11 @@ resource "aws_autoscaling_group" "autoscaling_group" {
 
   min_size = var.min_size
   max_size = var.max_size
+  min_elb_capacity = var.min_size
+
+  lifecycle {
+    create_before_destroy = true
+  }
 
   tag {
     key = "Name"

@@ -10,13 +10,19 @@ variable "cluster_name" {
 }
 
 variable "db_remote_state_bucket" {
-  description = "The name of the S3 bucket for storing all the remote state files for database and webserver cluster"
+  description = "The name of the S3 bucket for storing the remote state file for the database resource"
   type = string
 }
 
 variable "db_remote_state_key" {
   description = "The path where the database's remote state file is stored in the S3 bucket"
   type = string
+}
+
+variable "ami" {
+  description = "The Amazon Machine Image to use in the launch configuration"
+  type = string
+  default = "ami-0fb653ca2d3203ac1"
 }
 
 variable "instance_type" {
@@ -40,7 +46,14 @@ variable "custom_tags" {
 }
 
 variable "enable_autoscaling" {
-  description = "Whether to enable auto scaling in the module"
+  description = "Whether to enable autoscaling in the module"
   type = bool
   default = false
 }
+
+variable "server_data" {
+  description = "The data to serve in the server"
+  type = string
+  default = "Hello World"
+}
+
