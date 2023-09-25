@@ -45,7 +45,7 @@ resource "aws_launch_configuration" "launch_config" {
 }
 
 resource "aws_autoscaling_group" "autoscaling_group" {
-  name = "${var.cluster_name}-${aws_launch_configuration.launch_config.name}"
+  name = var.cluster_name
   launch_configuration = aws_launch_configuration.launch_config.name
   vpc_zone_identifier = data.aws_subnets.default_vpc_subnets.ids
   target_group_arns = [aws_lb_target_group.load_balancer_target_group.arn]
@@ -53,11 +53,6 @@ resource "aws_autoscaling_group" "autoscaling_group" {
 
   min_size = var.min_size
   max_size = var.max_size
-  min_elb_capacity = var.min_size
-
-  lifecycle {
-    create_before_destroy = true
-  }
 
   tag {
     key = "Name"
@@ -72,6 +67,14 @@ resource "aws_autoscaling_group" "autoscaling_group" {
       key = tag.key
       value = tag.value
       propagate_at_launch = true
+    }
+  }
+
+  instance_refresh {
+    strategy = "Rolling"
+
+    preferences {
+      min_healthy_percentage = 50
     }
   }
 }
